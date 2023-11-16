@@ -1,0 +1,44 @@
+name: SSH Deploy to Ubuntu VPS
+
+on: 
+ push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3 
+    - name: Deploy to Server
+      uses: easingthemes/ssh-deploy@main
+      env:
+          SSH_PRIVATE_KEY: ${{secrets.SSH_VPS_CICD_PKEY}}
+          ARGS: "-rlgoDzvc -i --delete"
+          REMOTE_HOST: "rerum.alenev.name"
+          REMOTE_USER: "admin"
+          SOURCE: ""
+          TARGET: "/home/admin/sites/rerum.alenev.name"
+          EXCLUDE: "/.git/, /.github/, /vendor/, .env"
+          SCRIPT_AFTER:
+    - name: Configure SSH
+      run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/staging.key
+          chmod 600 ~/.ssh/staging.key
+          cat >>~/.ssh/config <<END
+          Host staging
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/staging.key
+            StrictHostKeyChecking no
+          END
+      env:
+          SSH_USER: "admin"
+          SSH_KEY: ${{secrets.SSH_VPS_CICD_PKEY}}
+          SSH_HOST: "rerum.alenev.name"
+    - name: Composer update
+      run: | 
+          ssh -T staging 'cd /home/admin/sites/rerum.alenev.name && composer update'
