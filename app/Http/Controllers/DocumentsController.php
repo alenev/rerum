@@ -47,7 +47,7 @@ class DocumentsController extends Controller
                 if (!isset($overallIndex[$value])) {
                     $overallIndex[$value] = [];
                 }
-                $this->updateIndex($overallIndex[$value], $filename);
+                $this->updateIndex($overallIndex[$value], $filename); 
             }
         }
     }
@@ -60,7 +60,6 @@ class DocumentsController extends Controller
                 return;
             }
         }
-
         $indexArray[] = $newFilename;
     }
 
@@ -150,6 +149,9 @@ class DocumentsController extends Controller
 
     private function getDocumentSearchData($file, $value)
     {
+        if(strpos($file,'json') === false) {
+            $file = $file.'.json';
+        }
         $contents = json_decode(Storage::get('uploads/documents/' . $file), true);
         $data = [];
         if (!empty($contents)) {
@@ -191,7 +193,7 @@ class DocumentsController extends Controller
                 foreach ($matchingFiles as $file) {
                     if (is_array($file)) {
                         foreach ($file as $key => $filename) {
-                            $result[] = $this->getDocumentSearchData($filename, $value);
+                            $result[] = $this->getDocumentSearchData($filename, $value);                 
                         }
                     } else {
                         $filename = $file;
